@@ -52,7 +52,7 @@ function SerialPortFactory() {
   };
 
   function SerialPort(path, options, openImmediately, callback) {
-
+    this.events_awaiting = 0;
     var self = this;
 
     var args = Array.prototype.slice.call(arguments);
@@ -258,6 +258,7 @@ function SerialPortFactory() {
       var start = self.pool.used;
 
       function afterRead(err, bytesRead, readPool, bytesRequested) {
+        this.events_awaiting++;
         self.reading = false;
         if (err) {
           if (err.code && err.code === 'EAGAIN') {
@@ -310,6 +311,7 @@ function SerialPortFactory() {
 
     SerialPort.prototype._emitData = function (data) {
       this.options.dataCallback(data);
+      this.events_awaiting--;
     };
 
     SerialPort.prototype.pause = function () {
